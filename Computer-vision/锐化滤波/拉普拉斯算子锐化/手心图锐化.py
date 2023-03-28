@@ -8,7 +8,7 @@ from PIL import Image
 import numpy as np
 
 # 读入原图像
-img = Image.open('./image/4 图像增强-2/x-rayblog-gausian blur d4.jpg')
+img = Image.open('./image/image_hance/x-rayblog-gausian blur d4.jpg')
 # img.show()
 
 # 为了减少计算的维度，因此将图像转为灰度图
