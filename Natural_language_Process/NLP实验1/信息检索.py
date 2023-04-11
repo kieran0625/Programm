@@ -24,7 +24,6 @@ stopwords = [w.strip() for w in stopwords]
 # jieba分词后的停用词性
 # [标点符号、连词、助词、副词、介词、时语素、'的'、数词、方位词、代词]
 stop_flag = ['x', 'c', 'u', 'd', 'p', 't', 'uj', 'm', 'f', 'r']
-
 # 进行分词和虚拟此过滤
 
 
@@ -38,6 +37,14 @@ def tokenization(filename):
             result.append(word)  # 虚词过滤
     return result
 
+# 测试集分词
+def tokenization_test(raw):
+    result = []
+    words = pseg.cut(raw)  # 分词
+    for word, flag in words:
+        if flag not in stop_flag and word not in stopwords:
+            result.append(word)  # 虚词过滤
+    return result
 
 class TF_IDF(object):
     def __init__(self, corpus):
@@ -100,43 +107,49 @@ if __name__ == "__main__":
         filenames.append(files)
         file_dict[root] = files
 
-    # print(file_dict) # 得到子文件夹
+    print(file_dict) # 得到子文件夹
     # 遍历所有文件，拼接路径
     for k, v in file_dict.items():
         for i in v:
             file_name = os.path.join(k, i)
-            #print(file_name)
+            # print(file_name)
             corpus.append(tokenization(file_name))
     dictionary = corpora.Dictionary(corpus)
     TfidfModel = bm25.BM25(corpus)
-    # print(len(corpus)) # 文档个数
-    # print("========================================================")
-    # print(dictionary.token2id) # 单词与编号之间的映射关系
-    # print("----------------------------------------------------------------")
-    # print(len(dictionary)) # 单词总数
-
-    tfidfModel = TF_IDF(corpus)
-    
-    query_str = '中国 女曲 能否 击败 韩国 圆梦'
+    print(len(corpus)) # 文档个数
+    print("1111111111111111111111111111111111111111111")
+    print(dictionary.token2id) # 单词与编号之间的映射关系
+    print("2222222222222222222222222222222222222222222")
+    print(len(dictionary)) # 单词总数
     query = []
-    for word in query_str.strip().split():
-        query.append(word.encode('utf-8').decode('utf-8'))
-    scores = TfidfModel.get_scores(query)
-    # scores = TF_IDF.get_tfidfs(query)
-    # scores.sort(reverse=True)
-    print(scores)
-    idx = scores.index(max(scores))
-    print(idx)
-    file = list(chain.from_iterable(filenames))
-    fname = file[idx]
-    print(fname)
-    with open(fname,'r') as f:
-        print(f.read())
+    tfidfModel = TF_IDF(corpus)
+    test_path = './中文信息检索任务数据集/测试集.txt'
+    with open(test_path, 'r', encoding='gb18030', errors='ignore') as f:
+        for line in f:
+            temp = tokenization_test(line.strip())
+            query.append(temp)
+    scores_all=[]
+    idx_all=[]
+    fname_all=[]
+    for sentence in query:
+        scores = TfidfModel.get_scores(sentence)
+        # scores = TF_IDF.get_tfidfs(sentence)
+        # scores.sort(reverse=True)
+        scores_all.append(scores)
+        idx = scores.index(max(scores))
+        idx_all.append(idx)
+        file = list(chain.from_iterable(filenames))
+        fname = file[idx]
+        fname_all.append(fname)
+    print(query)
+    print(scores_all)
+    print(idx_all)
+    print(fname_all)
 
 
-'''
-    上面这些步骤，我们利用gensim.corpora.dictionary.Dictionary类为每个出现在语料库中的单词分配了一个独一无二的
-    整数编号id,这个操作收集了单词计数及其他相关的统计信息。
+
+    # 上面这些步骤，我们利用gensim.corpora.dictionary.Dictionary类为每个出现在语料库中的单词分配了一个独一无二的
+    # 整数编号id,这个操作收集了单词计数及其他相关的统计信息。
 
     # 列出1(0).txt文件中排名前5的words
     doc_vectors = [dictionary.doc2bow(text) for text in corpus]
@@ -145,4 +158,4 @@ if __name__ == "__main__":
     print(len(vec1_sorted))
     for term, freq in vec1_sorted[:5]:
         print(dictionary[term])
-'''
+
